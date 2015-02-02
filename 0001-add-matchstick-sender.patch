@@ -1,0 +1,2298 @@
+From a9955d6efd4e658f1fe5dfc9dc9e100b42b53c05 Mon Sep 17 00:00:00 2001
+From: jim <toandrew@infthink.com>
+Date: Fri, 30 Jan 2015 05:27:19 -0500
+Subject: [PATCH] add matchstick sender.
+
+Signed-off-by: jim <toandrew@infthink.com>
+
+add socket
+
+Signed-off-by: jim <toandrew@infthink.com>
+
+fix bug
+
+Signed-off-by: jim <toandrew@infthink.com>
+
+relaunch app
+
+Signed-off-by: jim <toandrew@infthink.com>
+
+change code
+
+Signed-off-by: jim <toandrew@infthink.com>
+
+fix bug
+
+Signed-off-by: jim <toandrew@infthink.com>
+
+fix bug
+
+Signed-off-by: jim <toandrew@infthink.com>
+---
+ build/autoconf/android.m4                          |    4 +-
+ dom/html/HTMLMediaElement.cpp                      |   61 ++
+ mobile/android/base/AndroidManifest.xml.in         |    8 +-
+ mobile/android/base/BrowserApp.java                | 1062 +++++++++++++++++++-
+ mobile/android/base/Makefile.in                    |    8 +-
+ mobile/android/base/MediaFlingBar.java             |   52 +
+ .../android/base/locales/en-US/android_strings.dtd |    3 +
+ mobile/android/base/moz.build                      |   13 +-
+ .../android/base/resources/drawable-xhdpi/line.png |  Bin 0 -> 1098 bytes
+ .../drawable-xhdpi/mediacontroller_pause.png       |  Bin 0 -> 1162 bytes
+ .../drawable-xhdpi/mediacontroller_play.png        |  Bin 0 -> 1622 bytes
+ .../scrubber_control_disabled_holo.png             |  Bin 0 -> 1941 bytes
+ .../scrubber_control_focused_holo.png              |  Bin 0 -> 2355 bytes
+ .../scrubber_control_normal_holo.png               |  Bin 0 -> 2634 bytes
+ .../scrubber_control_pressed_holo.png              |  Bin 0 -> 3198 bytes
+ .../drawable-xhdpi/scrubber_primary_holo.9.png     |  Bin 0 -> 1001 bytes
+ .../drawable-xhdpi/scrubber_secondary_holo.9.png   |  Bin 0 -> 995 bytes
+ .../resources/drawable/mediacontroller_button.xml  |   10 +
+ .../drawable/scrubber_control_selector_holo.xml    |   19 +
+ .../scrubber_progress_horizontal_holo_dark.xml     |   28 +
+ mobile/android/base/resources/layout/gecko_app.xml |   10 +-
+ .../base/resources/layout/mediacontroller.xml      |  102 ++
+ .../resources/menu-large-v11/browser_app_menu.xml  |    3 +
+ .../base/resources/menu-v11/browser_app_menu.xml   |    4 +
+ .../resources/menu-xlarge-v11/browser_app_menu.xml |    4 +
+ .../base/resources/menu/browser_app_menu.xml       |    3 +
+ .../base/resources/values-zh-rCN/strings.xml       |   26 +
+ mobile/android/base/resources/values/colors.xml    |    3 +
+ mobile/android/base/resources/values/strings.xml   |   46 +
+ mobile/android/base/resources/values/styles.xml    |   18 +
+ xpcom/base/nsCycleCollector.cpp                    |    2 +-
+ 31 files changed, 1473 insertions(+), 16 deletions(-)
+ create mode 100644 mobile/android/base/MediaFlingBar.java
+ create mode 100644 mobile/android/base/resources/drawable-xhdpi/line.png
+ create mode 100644 mobile/android/base/resources/drawable-xhdpi/mediacontroller_pause.png
+ create mode 100644 mobile/android/base/resources/drawable-xhdpi/mediacontroller_play.png
+ create mode 100644 mobile/android/base/resources/drawable-xhdpi/scrubber_control_disabled_holo.png
+ create mode 100644 mobile/android/base/resources/drawable-xhdpi/scrubber_control_focused_holo.png
+ create mode 100644 mobile/android/base/resources/drawable-xhdpi/scrubber_control_normal_holo.png
+ create mode 100644 mobile/android/base/resources/drawable-xhdpi/scrubber_control_pressed_holo.png
+ create mode 100644 mobile/android/base/resources/drawable-xhdpi/scrubber_primary_holo.9.png
+ create mode 100644 mobile/android/base/resources/drawable-xhdpi/scrubber_secondary_holo.9.png
+ create mode 100644 mobile/android/base/resources/drawable/mediacontroller_button.xml
+ create mode 100644 mobile/android/base/resources/drawable/scrubber_control_selector_holo.xml
+ create mode 100644 mobile/android/base/resources/drawable/scrubber_progress_horizontal_holo_dark.xml
+ create mode 100644 mobile/android/base/resources/layout/mediacontroller.xml
+ create mode 100644 mobile/android/base/resources/values-zh-rCN/strings.xml
+ create mode 100644 mobile/android/base/resources/values/strings.xml
+
+diff --git a/build/autoconf/android.m4 b/build/autoconf/android.m4
+index e432f97..1549201 100644
+--- a/build/autoconf/android.m4
++++ b/build/autoconf/android.m4
+@@ -256,8 +256,8 @@ if test -n "$MOZ_NATIVE_DEVICES" ; then
+     AC_SUBST(MOZ_NATIVE_DEVICES)
+ 
+     AC_MSG_CHECKING([for google play services])
+-    GOOGLE_PLAY_SERVICES_LIB="${ANDROID_SDK_ROOT}/extras/google/google_play_services/libproject/google-play-services_lib/libs/google-play-services.jar"
+-    GOOGLE_PLAY_SERVICES_RES="${ANDROID_SDK_ROOT}/extras/google/google_play_services/libproject/google-play-services_lib/res"
++    GOOGLE_PLAY_SERVICES_LIB="/home/andalululu/flint-android-sender-sdk/bin/flint-android-sender-sdk.jar"
++    GOOGLE_PLAY_SERVICES_RES="/home/andalululu/flint-android-sender-sdk/res"
+     AC_SUBST(GOOGLE_PLAY_SERVICES_LIB)
+     AC_SUBST(GOOGLE_PLAY_SERVICES_RES)
+     if ! test -e $GOOGLE_PLAY_SERVICES_LIB ; then
+diff --git a/dom/html/HTMLMediaElement.cpp b/dom/html/HTMLMediaElement.cpp
+index 81e8699..3fbcd0e 100644
+--- a/dom/html/HTMLMediaElement.cpp
++++ b/dom/html/HTMLMediaElement.cpp
+@@ -90,6 +90,22 @@
+ #include "nsRange.h"
+ #include <algorithm>
+ 
++#include<stdio.h>
++#include<stdlib.h>
++#include<string.h>
++#include<sys/types.h>
++#include<sys/socket.h>
++#include<netinet/in.h>
++#include<fcntl.h>
++
++#define MAXLINE 4096
++
++
++#include <android/log.h>
++
++#define ALOG(args...) __android_log_print(ANDROID_LOG_INFO, "media", ## args);
++
++
+ #ifdef PR_LOGGING
+ static PRLogModuleInfo* gMediaElementLog;
+ static PRLogModuleInfo* gMediaElementEventsLog;
+@@ -317,6 +333,7 @@ NS_IMETHODIMP HTMLMediaElement::MediaLoadListener::OnStartRequest(nsIRequest* aR
+ {
+   nsContentUtils::UnregisterShutdownObserver(this);
+ 
++  ALOG("HTMLMediaElement::MediaLoadListener::OnStartRequest!");
+   if (!mElement) {
+     // We've been notified by the shutdown observer, and are shutting down.
+     return NS_BINDING_ABORTED;
+@@ -359,6 +376,46 @@ NS_IMETHODIMP HTMLMediaElement::MediaLoadListener::OnStartRequest(nsIRequest* aR
+     return NS_BINDING_ABORTED;
+   }
+ 
++
++  //
++
++  nsAutoString mediaSrc;
++  element->GetCurrentSrc(mediaSrc);
++  char sendline[4096] = {0};
++  sprintf(sendline,"%s\n",NS_ConvertUTF16toUTF8(mediaSrc).get());
++  ALOG("HTMLMediaElement::GetCurrentSrc[%s]\n",sendline);
++
++//#include<unistd.h>
++
++    int    sockfd, n;
++    struct sockaddr_in    servaddr;
++
++    if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) >= 0) {
++      memset(&servaddr, 0, sizeof(servaddr));
++      servaddr.sin_family = AF_INET;
++      servaddr.sin_port = htons(3333);
++      if(inet_pton(AF_INET, "127.0.0.1", &servaddr.sin_addr) <= 0){
++        ALOG("inet_pton error for %s\n","127.0.0.1");
++      }
++
++      //int flags = fcntl(socket, F_GETFL, 0); 
++      //fcntl(socket, F_SETFL, flags | O_NONBLOCK);
++
++      if(connect(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) >= 0){
++    	ALOG("send msg to server: \n");
++    	if( send(sockfd, sendline, strlen(sendline), 0) < 0)
++   	 {
++        	ALOG("send msg error: \n");
++    	}
++      } else {
++        ALOG("connect error\n");
++      }
++
++      close(sockfd);
++    } else {
++        ALOG("create socket error\n");
++    }
++
+   nsCOMPtr<nsIChannel> channel = do_QueryInterface(aRequest);
+   if (channel &&
+       element &&
+@@ -590,6 +647,8 @@ NS_IMETHODIMP HTMLMediaElement::GetCurrentSrc(nsAString & aCurrentSrc)
+   nsAutoCString src;
+   GetCurrentSpec(src);
+   aCurrentSrc = NS_ConvertUTF8toUTF16(src);
++
++  ALOG("HTMLMediaElement::GetCurrentSrc[%s]\n", NS_ConvertUTF16toUTF8(aCurrentSrc).get());
+   return NS_OK;
+ }
+ 
+@@ -2096,6 +2155,8 @@ HTMLMediaElement::HTMLMediaElement(already_AddRefed<mozilla::dom::NodeInfo>& aNo
+   }
+ #endif
+ 
++  ALOG("HTMLMediaElement::HTMLMediaElement");
++
+   mAudioChannel = AudioChannelService::GetDefaultAudioChannel();
+ 
+   mPaused.SetOuter(this);
+diff --git a/mobile/android/base/AndroidManifest.xml.in b/mobile/android/base/AndroidManifest.xml.in
+index d9f7be1..72ba170 100644
+--- a/mobile/android/base/AndroidManifest.xml.in
++++ b/mobile/android/base/AndroidManifest.xml.in
+@@ -96,7 +96,7 @@
+ 
+ #ifdef MOZ_NATIVE_DEVICES
+         <!-- This resources comes from Google Play Services. Required for casting support. -->
+-        <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
++        <!-- meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" /-->
+ #endif
+ 
+         <!-- If the windowSoftInputMode adjust* flag changes below, the
+@@ -447,6 +447,12 @@
+             android:name="org.mozilla.gecko.NotificationService">
+         </service>
+ 
++        <service android:name="tv.matchstick.flint.service.FlintDeviceService" android:exported="false">
++             <intent-filter>
++                  <action android:name="android.media.MediaRouteProviderService" />
++             </intent-filter>
++        </service>
++
+ 
+ #include ../services/manifests/FxAccountAndroidManifest_services.xml.in
+ #include ../services/manifests/HealthReportAndroidManifest_services.xml.in
+diff --git a/mobile/android/base/BrowserApp.java b/mobile/android/base/BrowserApp.java
+index 9413a63..3bdcab9 100644
+--- a/mobile/android/base/BrowserApp.java
++++ b/mobile/android/base/BrowserApp.java
+@@ -137,6 +137,51 @@ import android.widget.ViewFlipper;
+ 
+ import com.readystatesoftware.systembartint.SystemBarTintManager;
+ 
++
++
++// add for flint
++import java.io.BufferedReader;
++import java.io.InputStreamReader;
++import java.net.ServerSocket;  
++import java.net.Socket;
++import java.net.InetAddress;
++import android.os.Handler;
++import android.support.v7.app.MediaRouteButton;
++import android.support.v7.media.MediaRouteSelector;
++import tv.matchstick.flint.FlintMediaControlIntent;
++import tv.matchstick.flint.Flint;
++import android.support.v7.media.MediaControlIntent;
++import android.support.v7.media.MediaRouteSelector;
++import android.support.v7.media.MediaRouter;
++import android.support.v7.media.MediaRouter.RouteInfo;
++
++import tv.matchstick.flint.ApplicationMetadata;
++import tv.matchstick.flint.Flint.ApplicationConnectionResult;
++import tv.matchstick.flint.FlintDevice;
++import tv.matchstick.flint.FlintMediaControlIntent;
++import tv.matchstick.flint.FlintStatusCodes;
++import tv.matchstick.flint.MediaInfo;
++import tv.matchstick.flint.MediaMetadata;
++import tv.matchstick.flint.MediaStatus;
++import tv.matchstick.flint.RemoteMediaPlayer;
++import tv.matchstick.flint.RemoteMediaPlayer.MediaChannelResult;
++import tv.matchstick.flint.ConnectionResult;
++import tv.matchstick.flint.FlintManager;
++import tv.matchstick.flint.ResultCallback;
++import tv.matchstick.flint.Status;
++import tv.matchstick.flint.images.WebImage;
++
++import android.widget.SeekBar;
++import android.widget.TextView;
++import android.widget.ImageButton;
++import android.view.View.OnClickListener;
++
++import java.io.IOException;
++import java.util.concurrent.TimeUnit;
++import java.util.HashMap;
++import java.util.Map;
++//...
++
+ public class BrowserApp extends GeckoApp
+                         implements TabsPanel.TabsLayoutChangeListener,
+                                    PropertyAnimator.PropertyAnimationListener,
+@@ -215,7 +260,8 @@ public class BrowserApp extends GeckoApp
+     };
+ 
+     private FindInPageBar mFindInPageBar;
+-    private MediaCastingBar mMediaCastingBar;
++    //private MediaCastingBar mMediaCastingBar;
++    private MediaFlingBar mMediaFlingBar;
+ 
+     // We'll ask for feedback after the user launches the app this many times.
+     private static final int FEEDBACK_LAUNCH_COUNT = 15;
+@@ -637,6 +683,11 @@ public class BrowserApp extends GeckoApp
+ 
+     @Override
+     public boolean onKeyDown(int keyCode, KeyEvent event) {
++        if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
++            onVolumeChange(0.1);
++        } else if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
++            onVolumeChange(-0.1);
++        }
+         if (!mBrowserToolbar.isEditing() && onKey(null, keyCode, event)) {
+             return true;
+         }
+@@ -753,7 +804,8 @@ public class BrowserApp extends GeckoApp
+         setBrowserToolbarListeners();
+ 
+         mFindInPageBar = (FindInPageBar) findViewById(R.id.find_in_page);
+-        mMediaCastingBar = (MediaCastingBar) findViewById(R.id.media_casting);
++        //mMediaCastingBar = (MediaCastingBar) findViewById(R.id.media_casting);
++		mMediaFlingBar = (MediaFlingBar) findViewById(R.id.media_fling);
+ 
+         EventDispatcher.getInstance().registerGeckoThreadListener((GeckoEventListener)this,
+             "Menu:Open",
+@@ -823,7 +875,9 @@ public class BrowserApp extends GeckoApp
+ 
+         // Set the maximum bits-per-pixel the favicon system cares about.
+         IconDirectoryEntry.setMaxBPP(GeckoAppShell.getScreenDepth());
+-    }
++    
++		initFlingServerSocket();
++	}
+ 
+     private void setupSystemUITinting() {
+         if (!Versions.feature19Plus) {
+@@ -881,6 +935,7 @@ public class BrowserApp extends GeckoApp
+     }
+ 
+     private Class<?> getMediaPlayerManager() {
++/*
+         if (AppConstants.MOZ_MEDIA_PLAYER) {
+             try {
+                 return Class.forName("org.mozilla.gecko.MediaPlayerManager");
+@@ -889,12 +944,17 @@ public class BrowserApp extends GeckoApp
+                 Log.e(LOGTAG, "No native casting support", ex);
+             }
+         }
++*/
+ 
+         return null;
+     }
+ 
+     @Override
+     public void onBackPressed() {
++	if (mApiClient == null || !mApiClient.isConnected()) {
++            mMediaFlingBar.hide(); 
++        }
++
+         if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+             super.onBackPressed();
+             return;
+@@ -955,6 +1015,10 @@ public class BrowserApp extends GeckoApp
+     public void onStart() {
+         super.onStart();
+ 
++		Log.e(LOGTAG, "onStart!");
++        mMediaRouter.addCallback(mMediaRouteSelector, mMediaRouterCallback,
++            MediaRouter.CALLBACK_FLAG_PERFORM_ACTIVE_SCAN);
++
+         // Queue this work so that the first launch of the activity doesn't
+         // trigger profile init too early.
+         ThreadUtils.postToBackgroundThread(new Runnable() {
+@@ -976,6 +1040,9 @@ public class BrowserApp extends GeckoApp
+     public void onStop() {
+         super.onStop();
+ 
++		Log.e(LOGTAG, "onStop!");
++        mMediaRouter.removeCallback(mMediaRouterCallback);
++
+         // We only show the guest mode notification when our activity is in the foreground.
+         GuestSession.hideNotification(this);
+     }
+@@ -1263,6 +1330,16 @@ public class BrowserApp extends GeckoApp
+ 
+     @Override
+     public void onDestroy() {
++	mQuit = true;
++        onRouteUnselected(null);
++	if (mServerSocket != null) {
++	    try {
++		mServerSocket.close();
++	    } catch (Exception e) {
++	    }
++	}
++        displays.clear();
++
+         mDynamicToolbar.destroy();
+ 
+         if (mBrowserToolbar != null)
+@@ -1273,10 +1350,16 @@ public class BrowserApp extends GeckoApp
+             mFindInPageBar = null;
+         }
+ 
++/*
+         if (mMediaCastingBar != null) {
+             mMediaCastingBar.onDestroy();
+             mMediaCastingBar = null;
+         }
++*/
++        if (mMediaFlingBar != null) {
++            mMediaFlingBar.onDestroy();
++            mMediaFlingBar = null;
++        }
+ 
+         if (mSharedPreferencesHelper != null) {
+             mSharedPreferencesHelper.uninit();
+@@ -2702,6 +2785,7 @@ public class BrowserApp extends GeckoApp
+         item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+             @Override
+             public boolean onMenuItemClick(MenuItem item) {
++                Log.i(LOGTAG, "Menu item clicked");
+                 GeckoAppShell.sendEventToGecko(GeckoEvent.createBroadcastEvent("Menu:Clicked", Integer.toString(info.id - ADDON_MENU_OFFSET)));
+                 return true;
+             }
+@@ -3169,6 +3253,16 @@ public class BrowserApp extends GeckoApp
+             return true;
+         }
+ 
++        if (itemId == R.id.show_fling_bar) {
++            //mMediaCastingBar.show();
++			if (mMediaFlingBar.getVisibility() == View.VISIBLE) {
++		            mMediaFlingBar.hide();
++		        } else {
++		            mMediaFlingBar.show();
++		        }
++		        return true;
++		}
++
+         if (itemId == R.id.find_in_page) {
+             mFindInPageBar.show();
+             return true;
+@@ -3565,4 +3659,966 @@ public class BrowserApp extends GeckoApp
+                                          appLocale,
+                                          previousSession);
+     }
++
++
++    // add for flint
++
++    private boolean mQuit = false;
++    private ServerSocket mServerSocket = null;
++    protected Handler mHandler;
++    private Runnable mRefreshRunnable;
++    private Runnable mRefreshFlingRunnable;
++    private String mCurrentVideoUrl = null;
++    private MediaRouter mMediaRouter;
++    private MediaRouteSelector mMediaRouteSelector;
++    private MediaRouter.Callback mMediaRouterCallback;
++
++    private android.support.v7.app.MediaRouteButton mMediaRouteButton;
++    private static final String APPLICATION_ID = "~flintplayer";
++    private static final String APPLICATION_URL = "http://openflint.github.io/flint-player/player.html";
++
++    private FlintDevice mSelectedDevice;
++    private FlintManager mApiClient;
++    private CastListener mCastListener;
++    private ConnectionCallbacks mConnectionCallbacks;
++    private RemoteMediaPlayer mMediaPlayer;
++    private boolean mShouldPlayMedia;
++    private MediaInfo mSelectedMedia;
++    private ApplicationMetadata mAppMetadata;
++    private boolean mSeeking;
++    private boolean mWaitingForReconnect;
++
++    private boolean mRelaunchApp;
++    private ImageButton mPlayPauseButton;
++    private ImageButton mStopFlingButton;
++    private SeekBar mMediaSeekBar;
++    private TextView mFlingCurrentTimeTextView;
++    private TextView mFlingTotalTimeTextView;
++    private TextView mFlingDeviceNameTextView;
++    private TextView mFlingMediaInfoTextView;
++
++    private View mFlingMediaControls;
++    private View mFlingInfo;
++
++    protected static final double VOLUME_INCREMENT = 0.05;
++    protected static final double MAX_VOLUME_LEVEL = 20;
++
++    protected static final int AFTER_SEEK_DO_NOTHING = 0;
++    protected static final int AFTER_SEEK_PLAY = 1;
++    protected static final int AFTER_SEEK_PAUSE = 2;
++
++    protected static final int PLAYER_STATE_NONE = 0;
++    protected static final int PLAYER_STATE_PLAYING = 1;
++    protected static final int PLAYER_STATE_PAUSED = 2;
++    protected static final int PLAYER_STATE_BUFFERING = 3;
++
++    private static final int REFRESH_INTERVAL_MS = (int) TimeUnit.SECONDS.toMillis(1);
++
++    private int mPlayerState;
++
++    private boolean mIsUserSeeking;
++
++    private final Map<String, String> displays = new HashMap<String, String>();
++
++
++
++
++
++
++
++
++
++
++
++
++   private MediaRouteSelector buildMediaRouteSelector() {
++        return new MediaRouteSelector.Builder()
++                .addControlCategory(FlintMediaControlIntent.categoryForFlint(APPLICATION_ID))
++                .build();
++   }
++
++   private class MyMediaRouterCallback extends MediaRouter.Callback {
++        @Override
++        public void onRouteSelected(MediaRouter router, RouteInfo route) {
++            Log.d(LOGTAG, "onRouteSelected: route=" + route);
++            mShouldPlayMedia = true;
++            try {
++                onRouteSelected(route);
++            } catch(Exception e) {
++                e.printStackTrace();
++            }
++        }
++
++        @Override
++        public void onRouteUnselected(MediaRouter router, RouteInfo route) {
++            Log.d(LOGTAG, "onRouteUnselected: route=" + route);
++            mShouldPlayMedia = false;
++	    try {
++                onRouteUnselected(route);
++            } catch (Exception e) {
++                e.printStackTrace();
++            }
++        }
++
++        @Override
++        public void onRouteAdded(MediaRouter router, MediaRouter.RouteInfo route) {
++            Log.d(LOGTAG, "onRouteAdded: route=" + route);
++            String display = route.toString();
++            if (display != null) {
++                displays.put(route.getId(), display);
++            } 
++        }
++       
++        public void onRouteRemoved(MediaRouter router, RouteInfo route) {
++            Log.d(LOGTAG, "onRouteRemoved: route=" + route);
++            displays.remove(route.getId());
++        }
++
++        @Override
++        public void onRouteChanged(MediaRouter router, MediaRouter.RouteInfo route) {
++            Log.d(LOGTAG, "onRouteChanged: route=" + route);
++            String display = displays.get(route.getId());
++            if (display != null) {
++                displays.put(route.getId(), display);
++            }
++        }
++   }
++
++
++   private void initFlingServerSocket() {
++        Log.e(LOGTAG, "initFlingServerSocket!");
++        mConnectionCallbacks = new ConnectionCallbacks();
++
++        mCastListener = new CastListener();
++
++	mMediaFlingBar.show();
++	mMediaFlingBar.hide();
++
++
++        Flint.FlintApi.setApplicationId(APPLICATION_ID);
++
++        mMediaRouter = MediaRouter.getInstance(getApplicationContext());
++        mMediaRouteSelector = buildMediaRouteSelector();
++        mMediaRouterCallback = new MyMediaRouterCallback();
++
++        mMediaRouteButton = (MediaRouteButton)mMediaFlingBar.findViewById(R.id.media_route_button);
++	mMediaRouteButton.setRouteSelector(mMediaRouteSelector);
++
++        mPlayPauseButton = (ImageButton)mMediaFlingBar.findViewById(R.id.mediacontroller_play_pause);
++        mPlayPauseButton.setOnClickListener(new OnClickListener() {
++            @Override
++            public void onClick(View v) {
++                if (mPlayerState == PLAYER_STATE_PAUSED) {
++                    onPlayClicked();
++                } else {
++                    onPauseClicked();
++                }
++            }
++        });
++
++/*
++        mStopFlingButton = (ImageButton)mMediaFlingBar.findViewById(R.id.media_stop);
++        mStopFlingButton.setOnClickListener(new OnClickListener() {
++            @Override
++            public void onClick(View v) {
++            	onStopClicked();
++            }
++        });
++*/
++
++        mMediaSeekBar = (SeekBar)mMediaFlingBar.findViewById(R.id.mediacontroller_seekbar);
++        mMediaSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
++            @Override
++            public void onStopTrackingTouch(SeekBar seekBar) {
++                mIsUserSeeking = false;
++                mMediaSeekBar.setSecondaryProgress(0);
++                onSeekBarMoved(TimeUnit.SECONDS.toMillis(seekBar.getProgress()));
++            }
++
++            @Override
++            public void onStartTrackingTouch(SeekBar seekBar) {
++                mIsUserSeeking = true;
++                mMediaSeekBar.setSecondaryProgress(seekBar.getProgress());
++            }
++
++            @Override
++            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
++            }
++        });
++
++        mFlingCurrentTimeTextView = (TextView)mMediaFlingBar.findViewById(R.id.mediacontroller_time_current);
++        mFlingTotalTimeTextView = (TextView)mMediaFlingBar.findViewById(R.id.mediacontroller_time_total);
++
++        mFlingMediaControls = mMediaFlingBar.findViewById(R.id.mediacontroller_control);
++        mFlingInfo = mMediaFlingBar.findViewById(R.id.fling_info);
++
++        mFlingDeviceNameTextView = (TextView)mMediaFlingBar.findViewById(R.id.fling_device_name);
++        mFlingMediaInfoTextView = (TextView)mMediaFlingBar.findViewById(R.id.media_info);
++
++        setPlayerState(PLAYER_STATE_NONE);
++
++        mRefreshRunnable = new Runnable() {
++            @Override
++            public void run() {
++		Log.e(LOGTAG, "show media cast control?![" + displays.size());
++                if (displays.size() > 0) {
++                            MediaMetadata metadata = new MediaMetadata(MediaMetadata.MEDIA_TYPE_MOVIE);
++        mSelectedMedia = new MediaInfo.Builder(mCurrentVideoUrl)
++                        .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
++                        .setContentType("video/mp4")
++                        .setMetadata(metadata).build();
++
++
++		    mMediaFlingBar.show();
++
++                    Log.e(LOGTAG,"should show!");
++                    if (mApiClient != null && mApiClient.isConnected()) {
++                        if (mMediaPlayer != null) {
++                            playMedia(mSelectedMedia);
++                        }
++
++                    }
++                }
++            }
++        };
++
++        mRefreshFlingRunnable = new Runnable() {
++            @Override
++            public void run() {
++                onRefreshEvent();
++                startRefreshTimer();
++            }
++        };
++
++	mHandler = new Handler();
++
++	new Thread(new Runnable() {
++            @Override
++            public void run() {
++		try {
++        	    mServerSocket = new ServerSocket(3333,10,InetAddress.getByName ("127.0.0.1")); 
++		} catch (Exception e) {
++		    e.printStackTrace();
++		}
++		while(!mQuit) {
++		    try {
++		        Socket s = mServerSocket.accept();
++                    	BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));  
++                    	String line = br.readLine();  
++                    	Log.e(LOGTAG, "来自服务器的数据：[" + line + "]");  
++
++                        mCurrentVideoUrl = line;
++
++                    	br.close();
++                    	s.close();
++			mHandler.postDelayed(mRefreshRunnable, 1000);
++		    } catch (Exception e) {
++			e.printStackTrace();
++                    }
++		}
++
++		Log.e(LOGTAG, "Quit Fling Socket Server Thread!");
++		try {	
++		    mServerSocket.close();
++		    mServerSocket = null;
++                } catch(Exception e) {
++		}
++	    }
++	}).start();
++   }
++
++    protected void onRouteSelected(RouteInfo route) {
++        Log.d(LOGTAG, "onRouteSelected: " + route + " url:" + mCurrentVideoUrl);
++
++        if (mCurrentVideoUrl == null) {
++            Log.d(LOGTAG, "url is " + mCurrentVideoUrl + " ignore it!");
++            Toast.makeText(this, "url is null!ignore it!", Toast.LENGTH_SHORT).show();
++            mMediaRouter.selectRoute(mMediaRouter.getDefaultRoute());
++            return;
++        }
++
++        MediaMetadata metadata = new MediaMetadata(MediaMetadata.MEDIA_TYPE_MOVIE);
++        mSelectedMedia = new MediaInfo.Builder(mCurrentVideoUrl)
++                        .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
++                        .setContentType("video/mp4")
++                        .setMetadata(metadata).build();
++
++        FlintDevice device = FlintDevice.getFromBundle(route.getExtras());
++        setSelectedDevice(device);
++        updateButtonStates();
++    }
++
++    protected void onRouteUnselected(RouteInfo route) {
++        Log.d(LOGTAG, "onRouteUnselected: " + route);
++        setSelectedDevice(null);
++        mAppMetadata = null;
++        clearMediaState();
++        updateButtonStates();
++    }
++
++    private void setSelectedDevice(FlintDevice device) {
++        mSelectedDevice = device;
++        setCurrentDeviceName(mSelectedDevice != null ? mSelectedDevice.getFriendlyName() : null);
++
++        if (mSelectedDevice == null) {
++            Log.d(LOGTAG, "destroy controller");
++	    onStopAppClicked();
++            detachMediaPlayer();
++            if ((mApiClient != null) && mApiClient.isConnected()) {
++                mApiClient.disconnect();
++            }
++            mApiClient = null;
++        } else {
++            Log.d(LOGTAG, "acquiring controller for " + mSelectedDevice);
++            try {
++                Flint.FlintOptions.Builder apiOptionsBuilder = Flint.FlintOptions.builder(
++                        mSelectedDevice, mCastListener);
++                //apiOptionsBuilder.setVerboseLoggingEnabled(true);
++
++                mApiClient = new FlintManager.Builder(this)
++                        .addApi(Flint.API, apiOptionsBuilder.build())
++                        .addConnectionCallbacks(mConnectionCallbacks)
++                        .build();
++                mApiClient.connect();
++            } catch (IllegalStateException e) {
++                Log.w(LOGTAG, "error while creating a device controller", e);
++                //showErrorDialog(getString(R.string.error_no_controller));
++            }
++        }
++    }
++
++    private class ConnectionCallbacks implements FlintManager.ConnectionCallbacks {
++        @Override
++        public void onConnectionSuspended(int cause) {
++            Log.d(LOGTAG, "ConnectionCallbacks.onConnectionSuspended");
++            mHandler.post(new Runnable() {
++                @Override
++                public void run() {
++                    // TODO: need to disable all controls, and possibly display a
++                    // "reconnecting..." dialog or overlay
++                    detachMediaPlayer();
++                    updateButtonStates();
++                    mWaitingForReconnect = true;
++                }
++            });
++        }
++
++        @Override
++        public void onConnectionFailed(ConnectionResult result) {
++            Log.d(LOGTAG, "onConnectionFailed");
++            mHandler.post(new Runnable() {
++                @Override
++                public void run() {
++                    updateButtonStates();
++                    clearMediaState();
++                    cancelRefreshTimer();
++                    //showErrorDialog(getString(R.string.error_no_device_connection));
++                }
++            });
++        }
++
++        @Override
++        public void onConnected(final Bundle connectionHint) {
++            Log.d(LOGTAG, "ConnectionCallbacks.onConnected");
++            mHandler.post(new Runnable() {
++                @Override
++                public void run() {
++                    if (mApiClient == null || !mApiClient.isConnected()) {
++                        // We got disconnected while this runnable was pending execution.
++                        Log.d(LOGTAG, "ConnectionCallbacks.onConnected. ignore it!");
++                        return;
++                    }
++
++                    onLaunchAppClicked();
++                }
++            });
++        }
++    }
++
++    protected final void setApplicationStatus(String statusText) {
++       if (mSelectedDevice == null) {
++           return;
++       }
++
++       mFlingDeviceNameTextView.setText(mSelectedDevice.getFriendlyName()); 
++ 
++       if (mSelectedMedia == null) {
++           return;
++       } 
++
++       mFlingMediaInfoTextView.setText(mSelectedMedia.getContentId()); 
++    }
++
++    private class CastListener extends Flint.Listener {
++        @Override
++        public void onVolumeChanged() {
++            refreshDeviceVolume(Flint.FlintApi.getVolume(mApiClient),
++                    Flint.FlintApi.isMute(mApiClient));
++        }
++
++        @Override
++        public void onApplicationStatusChanged() {
++            String status = Flint.FlintApi.getApplicationStatus(mApiClient);
++            Log.d(LOGTAG, "onApplicationStatusChanged; status=" + status);
++            setApplicationStatus(status);
++        }
++
++        @Override
++        public void onApplicationDisconnected(int statusCode) {
++            Log.d(LOGTAG, "onApplicationDisconnected: statusCode=" + statusCode);
++            mAppMetadata = null;
++            detachMediaPlayer();
++            clearMediaState();
++            updateButtonStates();
++            //if (statusCode != FlintStatusCodes.SUCCESS) {
++                // This is an unexpected disconnect.
++                //setApplicationStatus(getString(R.string.status_app_disconnected));
++            //}
++        }
++    }
++
++    private final class ApplicationConnectionResultCallback implements
++            ResultCallback<Flint.ApplicationConnectionResult> {
++        private final String mClassTag;
++
++        public ApplicationConnectionResultCallback(String suffix) {
++            mClassTag = LOGTAG;
++        }
++
++        @Override
++        public void onResult(ApplicationConnectionResult result) {
++            Status status = result.getStatus();
++            Log.d(mClassTag, "ApplicationConnectionResultCallback.onResult: statusCode"
++                    + status.getStatusCode());
++            if (status.isSuccess()) {
++                ApplicationMetadata applicationMetadata = result.getApplicationMetadata();
++                //String sessionId = result.getSessionId();
++                String applicationStatus = result.getApplicationStatus();
++                boolean wasLaunched = result.getWasLaunched();
++                //Log.d(mClassTag, "application name: " + applicationMetadata.getName()
++                //        + ", status: " + applicationStatus + ", sessionId: " + sessionId
++                //        + ", wasLaunched: " + wasLaunched);
++                setApplicationStatus(applicationStatus);
++                attachMediaPlayer();
++                mAppMetadata = applicationMetadata;
++                startRefreshTimer();
++                updateButtonStates();
++                Log.d(mClassTag, "mShouldPlayMedia is " + mShouldPlayMedia);
++                if (mShouldPlayMedia) {
++                    mShouldPlayMedia = false;
++                    Log.d(mClassTag, "now loading media");
++                    playMedia(mSelectedMedia);
++                } else {
++                    // Synchronize with the receiver's state.
++                    Log.d(mClassTag, "requesting current media status");
++                    mMediaPlayer.requestStatus(mApiClient).setResultCallback(
++                            new ResultCallback<RemoteMediaPlayer.MediaChannelResult>() {
++                                @Override
++                                public void onResult(MediaChannelResult result) {
++                                    Status status = result.getStatus();
++                                    if (!status.isSuccess()) {
++                                        Log.w(mClassTag,
++                                                "Unable to request status: "
++                                                        + status.getStatusCode());
++                                    }
++                                }
++                            });
++                }
++            } else {
++                Log.d(mClassTag, "status is not success!");
++                //showErrorDialog(getString(R.string.error_app_launch_failed));
++            }
++        }
++    }
++
++    private void clearMediaState() {
++        setCurrentMediaMetadata(null, null, null);
++        refreshPlaybackPosition(0, 0);
++    }
++
++    private void attachMediaPlayer() {
++        if (mMediaPlayer != null) {
++            return;
++        }
++
++        mMediaPlayer = new RemoteMediaPlayer();
++        mMediaPlayer.setOnStatusUpdatedListener(new RemoteMediaPlayer.OnStatusUpdatedListener() {
++
++            @Override
++            public void onStatusUpdated() {
++                Log.d(LOGTAG, "MediaControlChannel.onStatusUpdated");
++                // If item has ended, clear metadata.
++                MediaStatus mediaStatus = mMediaPlayer.getMediaStatus();
++                if ((mediaStatus != null)
++                        && (mediaStatus.getPlayerState() == MediaStatus.PLAYER_STATE_IDLE)) {
++                    clearMediaState();
++                }
++
++                updatePlaybackPosition();
++                updateStreamVolume();
++                updateButtonStates();
++            }
++        });
++
++        mMediaPlayer.setOnMetadataUpdatedListener(
++                new RemoteMediaPlayer.OnMetadataUpdatedListener() {
++            @Override
++            public void onMetadataUpdated() {
++                Log.d(LOGTAG, "MediaControlChannel.onMetadataUpdated");
++                String title = null;
++                String artist = null;
++                Uri imageUrl = null;
++
++                MediaInfo mediaInfo = mMediaPlayer.getMediaInfo();
++                if (mediaInfo != null) {
++                    MediaMetadata metadata = mediaInfo.getMetadata();
++                    if (metadata != null) {
++                        title = metadata.getString(MediaMetadata.KEY_TITLE);
++
++                        artist = metadata.getString(MediaMetadata.KEY_ARTIST);
++                        if (artist == null) {
++                            artist = metadata.getString(MediaMetadata.KEY_STUDIO);
++                        }
++
++                        List<WebImage> images = metadata.getImages();
++                        if ((images != null) && !images.isEmpty()) {
++                            WebImage image = images.get(0);
++                            imageUrl = image.getUrl();
++                        }
++                    }
++                    setCurrentMediaMetadata(title, artist, imageUrl);
++                }
++            }
++        });
++
++        try {
++            Flint.FlintApi.setMessageReceivedCallbacks(mApiClient, mMediaPlayer.getNamespace(),
++                    mMediaPlayer);
++        } catch (IOException e) {
++            Log.w(LOGTAG, "Exception while launching application", e);
++        }
++    }
++
++    private void reattachMediaPlayer() {
++        if ((mMediaPlayer != null) && (mApiClient != null)) {
++            try {
++                Flint.FlintApi.setMessageReceivedCallbacks(mApiClient, mMediaPlayer.getNamespace(),
++                        mMediaPlayer);
++            } catch (IOException e) {
++                Log.w(LOGTAG, "Exception while launching application", e);
++            }
++        }
++    }
++
++    private void detachMediaPlayer() {
++        if ((mMediaPlayer != null) && (mApiClient != null)) {
++            try {
++                Flint.FlintApi.removeMessageReceivedCallbacks(mApiClient,
++                        mMediaPlayer.getNamespace());
++            } catch (IOException e) {
++                Log.w(LOGTAG, "Exception while launching application", e);
++            }
++        }
++        mMediaPlayer = null;
++    }
++
++    protected final void setCurrentDeviceName(String name) {
++    }
++
++    private void updateFlingDispInfo(boolean show) {
++        if (show) {
++            mFlingInfo.setVisibility(View.VISIBLE);
++        } else {
++            mFlingInfo.setVisibility(View.GONE);
++            mFlingDeviceNameTextView.setText(""); 
++            mFlingMediaInfoTextView.setText(""); 
++        }
++    }
++
++    private void updateButtonStates() {
++        boolean hasDeviceConnection = (mApiClient != null) && mApiClient.isConnected();
++        boolean hasAppConnection = (mAppMetadata != null);
++        boolean hasMediaConnection = (mMediaPlayer != null);
++        boolean hasMedia = false;
++
++        if (hasMediaConnection) {
++            MediaStatus mediaStatus = mMediaPlayer.getMediaStatus();
++            if (mediaStatus != null) {
++                int mediaPlayerState = mediaStatus.getPlayerState();
++                int playerState = PLAYER_STATE_NONE;
++                if (mediaPlayerState == MediaStatus.PLAYER_STATE_PAUSED) {
++                    playerState = PLAYER_STATE_PAUSED;
++                } else if (mediaPlayerState == MediaStatus.PLAYER_STATE_PLAYING) {
++                    playerState = PLAYER_STATE_PLAYING;
++                } else if (mediaPlayerState == MediaStatus.PLAYER_STATE_BUFFERING) {
++                    playerState = PLAYER_STATE_BUFFERING;
++                }
++                setPlayerState(playerState);
++
++                hasMedia = mediaStatus.getPlayerState() != MediaStatus.PLAYER_STATE_IDLE;
++                //mStopButton.setEnabled(hasMedia);
++
++               updateFlingDispInfo(true);
++            }
++        } else {
++            setPlayerState(PLAYER_STATE_NONE);
++
++            updateFlingDispInfo(false);
++            //mStopButton.setEnabled(false);
++        }
++
++/*
++        mLaunchAppButton.setEnabled(hasDeviceConnection && !hasAppConnection);
++        mJoinAppButton.setEnabled(hasDeviceConnection && !hasAppConnection);
++        mLeaveAppButton.setEnabled(hasDeviceConnection && hasAppConnection);
++        mStopAppButton.setEnabled(hasDeviceConnection && hasAppConnection);
++        mAutoplayCheckbox.setEnabled(hasDeviceConnection && hasAppConnection);
++*/
++
++        mPlayPauseButton.setEnabled(hasMediaConnection);
++        setSeekBarEnabled(hasMediaConnection);
++/*
++        setDeviceVolumeControlsEnabled(hasDeviceConnection);
++        setStreamVolumeControlsEnabled(hasMediaConnection);
++*/
++    }
++
++    protected final void setCurrentMediaMetadata(String title, String subtitle, Uri imageUrl) {
++    }
++
++    protected final void refreshPlaybackPosition(long position, long duration) {
++        //Log.e(LOGTAG, "refreshPlaybackPosition:position[" + position + " duration:" + duration);
++        if (!mIsUserSeeking) {
++            if (position == 0) {
++                mFlingTotalTimeTextView.setText("N/A");
++                mMediaSeekBar.setProgress(0);
++            } else if (position > 0) {
++                mMediaSeekBar.setProgress((int) TimeUnit.MILLISECONDS.toSeconds(position));
++            }
++            mFlingCurrentTimeTextView.setText(formatTime(position));
++        }
++
++        if (duration == 0) {
++            mFlingTotalTimeTextView.setText("N/A");
++            mMediaSeekBar.setMax(0);
++        } else if (duration > 0) {
++            mFlingTotalTimeTextView.setText(formatTime(duration));
++            if (!mIsUserSeeking) {
++                mMediaSeekBar.setMax((int) TimeUnit.MILLISECONDS.toSeconds(duration));
++            }
++        }
++    }
++
++    protected final String getReceiverApplicationId() {
++        return APPLICATION_ID;
++    }
++
++    protected final boolean getRelaunchApp() {
++        return mRelaunchApp;
++    }
++
++    /*
++     * Connects to the device (if necessary), and then casts the currently selected video.
++     */
++    protected void onPlayMedia(final MediaInfo media) {
++        mSelectedMedia = media;
++
++        if (mAppMetadata == null) {
++            return;
++        }
++
++        playMedia(mSelectedMedia);
++    }
++
++    protected void onLaunchAppClicked() {
++
++        if (mApiClient == null) {
++            return;
++        }
++        Log.e(LOGTAG, "onLaunchAppClicked!");
++        Flint.FlintApi.launchApplication(mApiClient, APPLICATION_URL)
++                .setResultCallback(new ApplicationConnectionResultCallback("LaunchApp"));
++    }
++
++    /*
++     * Begins playback of the currently selected video.
++     */
++    private void playMedia(MediaInfo media) {
++        Log.d(LOGTAG, "playMedia: " + media);
++        if (media == null) {
++            return;
++        }
++        if (mMediaPlayer == null) {
++            Log.e(LOGTAG, "Trying to play a video with no active media session");
++            return;
++        }
++
++        mMediaPlayer.load(mApiClient, media, isAutoplayChecked()).setResultCallback(
++                new ResultCallback<RemoteMediaPlayer.MediaChannelResult>() {
++                    @Override
++                    public void onResult(MediaChannelResult result) {
++                        if (!result.getStatus().isSuccess()) {
++                            Log.e(LOGTAG, "Failed to load media.");
++                        }
++                    }
++                });
++    }
++
++    private void updatePlaybackPosition() {
++        if (mMediaPlayer == null) {
++            return;
++        }
++
++        refreshPlaybackPosition(mMediaPlayer.getApproximateStreamPosition(),
++                mMediaPlayer.getStreamDuration());
++    }
++
++    private void updateStreamVolume() {
++        if (mMediaPlayer == null) {
++            return;
++        }
++        MediaStatus mediaStatus = mMediaPlayer.getMediaStatus();
++        if (mediaStatus != null) {
++            double streamVolume = mediaStatus.getStreamVolume();
++            boolean muteState = mediaStatus.isMute();
++            refreshStreamVolume(streamVolume, muteState);
++        }
++    }
++
++    protected final void cancelRefreshTimer() {
++        mHandler.removeCallbacks(mRefreshFlingRunnable);
++    }
++
++    protected final void refreshDeviceVolume(double percent, boolean muted) {
++/*
++        if (!mIsUserAdjustingVolume) {
++            mDeviceVolumeBar.setProgress((int) (percent * MAX_VOLUME_LEVEL));
++        }
++        mDeviceMuteCheckBox.setChecked(muted);
++*/
++    }
++
++
++    protected final void startRefreshTimer() {
++        mHandler.postDelayed(mRefreshFlingRunnable, REFRESH_INTERVAL_MS);
++    }
++
++    protected final void refreshStreamVolume(double percent, boolean muted) {
++/*
++        if (!mIsUserAdjustingVolume) {
++            mStreamVolumeBar.setProgress((int) (percent * MAX_VOLUME_LEVEL));
++        }
++        mStreamMuteCheckBox.setChecked(muted);
++*/
++    }
++
++    protected final boolean isAutoplayChecked() {
++        return true;
++    }
++
++    protected void onStopAppClicked() {
++        if (mApiClient == null) {
++            return;
++        }
++
++        try  {
++            Flint.FlintApi.stopApplication(mApiClient).setResultCallback(new ResultCallback<Status>() {
++                @Override
++                public void onResult(Status result) {
++                    if (result.isSuccess()) {
++                        mAppMetadata = null;
++                        detachMediaPlayer();
++                        updateButtonStates();
++                    } else {
++                    //showErrorDialog(getString(R.string.error_app_stop_failed));
++                    }
++                }
++            });
++        } catch(Exception e) {
++            e.printStackTrace();
++        }
++    }
++
++    protected void onPlayClicked() {
++        if (mMediaPlayer == null) {
++            return;
++        }
++        try {
++            mMediaPlayer.play(mApiClient);
++        } catch (Exception e) {
++            Log.w(LOGTAG, "Unable to play", e);
++            //showErrorDialog(e.getMessage());
++        }
++    }
++
++    protected void onPauseClicked() {
++        if (mMediaPlayer == null) {
++            return;
++        }
++        try {
++            mMediaPlayer.pause(mApiClient);
++        } catch (Exception e) {
++            Log.w(LOGTAG, "Unable to pause", e);
++            //showErrorDialog(e.getMessage());
++        }
++    }
++
++    protected void onStopClicked() {
++        if (mMediaPlayer == null) {
++            return;
++        }
++        try {
++            mMediaPlayer.stop(mApiClient);
++        } catch (Exception e) {
++            Log.w(LOGTAG, "Unable to stop");
++            //showErrorDialog(e.getMessage());
++        }
++
++        mShouldPlayMedia = false;
++	onRouteUnselected(null);
++
++	mMediaFlingBar.hide();
++    }
++
++    protected void onSeekBarMoved(long position) {
++        if (mMediaPlayer == null) {
++            return;
++        }
++
++        refreshPlaybackPosition(position, -1);
++
++        int behavior = getSeekBehavior();
++
++        int resumeState;
++        switch (behavior) {
++            case AFTER_SEEK_PLAY:
++                resumeState = RemoteMediaPlayer.RESUME_STATE_PLAY;
++                break;
++            case AFTER_SEEK_PAUSE:
++                resumeState = RemoteMediaPlayer.RESUME_STATE_PAUSE;
++                break;
++            case AFTER_SEEK_DO_NOTHING:
++            default:
++                resumeState = RemoteMediaPlayer.RESUME_STATE_UNCHANGED;
++        }
++        mSeeking = true;
++	try {
++            mMediaPlayer.seek(mApiClient, position, resumeState).setResultCallback(
++                new ResultCallback<MediaChannelResult>() {
++                    @Override
++                    public void onResult(MediaChannelResult result) {
++                        Status status = result.getStatus();
++                        if (status.isSuccess()) {
++                            mSeeking = false;
++                        } else {
++                            Log.w(LOGTAG, "Unable to seek: " + status.getStatusCode());
++                        }
++                    }
++
++                });
++	} catch (Exception e) {
++	    e.printStackTrace();
++	}
++    }
++
++    protected void onDeviceVolumeBarMoved(int volume) {
++        if (mApiClient == null) {
++            return;
++        }
++        try {
++            Flint.FlintApi.setVolume(mApiClient, volume / MAX_VOLUME_LEVEL);
++        } catch (IOException e) {
++            Log.w(LOGTAG, "Unable to change volume");
++        } catch (IllegalStateException e) {
++            //showErrorDialog(e.getMessage());
++        }
++    }
++
++    protected final int getSeekBehavior() {
++        if (mPlayerState == PLAYER_STATE_PLAYING) {
++	    return AFTER_SEEK_PLAY;
++        }
++
++        if (mPlayerState == PLAYER_STATE_PAUSED) {
++	    return AFTER_SEEK_PAUSE;
++	}
++
++	return AFTER_SEEK_DO_NOTHING;
++    }
++
++    protected void onRefreshEvent() {
++        if (!mSeeking) {
++            updatePlaybackPosition();
++        }
++        updateStreamVolume();
++        updateButtonStates();
++    }
++
++    protected final void setPlayerState(int playerState) {
++        mPlayerState = playerState;
++        if (mPlayerState == PLAYER_STATE_PAUSED) {
++            mPlayPauseButton.setImageResource(R.drawable.mediacontroller_play);
++        } else if (mPlayerState == PLAYER_STATE_PLAYING) {
++            mPlayPauseButton.setImageResource(R.drawable.mediacontroller_pause);
++        } else {
++            mPlayPauseButton.setImageResource(R.drawable.mediacontroller_play);
++	}
++
++        mPlayPauseButton.setEnabled((mPlayerState == PLAYER_STATE_PAUSED)
++                || (mPlayerState == PLAYER_STATE_PLAYING));
++    }
++
++    protected final void setSeekBarEnabled(boolean enabled) {
++        mMediaSeekBar.setEnabled(enabled);
++    }
++
++    private String formatTime(long millisec) {
++        int seconds = (int) (millisec / 1000);
++        int hours = seconds / (60 * 60);
++        seconds %= (60 * 60);
++        int minutes = seconds / 60;
++        seconds %= 60;
++
++        String time;
++        if (hours > 0) {
++            time = String.format("%d:%02d:%02d", hours, minutes, seconds);
++        } else {
++            time = String.format("%d:%02d", minutes, seconds);
++        }
++        return time;
++    }
++
++    private void onVolumeChange(double volumeIncrement) {
++        if (mMediaPlayer == null ) {
++            return;
++        }
++
++
++        Log.e(LOGTAG, "volumeIncrement:" + volumeIncrement);
++
++        try {
++            double v = mMediaPlayer.getMediaStatus().getStreamVolume();
++            Log.e(LOGTAG, "volumeIncrement:" + volumeIncrement + " v[" + v + "]");
++            v  += volumeIncrement;
++            if (v > 1.0) {
++                v = 1.0;
++            } else if (v < 0) {
++                v = 0.0;
++            }
++
++            mMediaPlayer.setStreamVolume(mApiClient, v).setResultCallback(
++                    new ResultCallback<MediaChannelResult>() {
++                        @Override
++                        public void onResult(MediaChannelResult result) {
++                            Status status = result.getStatus();
++                            if (!status.isSuccess()) {
++                                Log.w(LOGTAG, "Unable to set volume: " + status.getStatusCode());
++                            }
++                        }
++
++                    });
++        } catch (IllegalStateException e) {
++            //showErrorDialog(e.getMessage());
++        }
++    }
+ }
+diff --git a/mobile/android/base/Makefile.in b/mobile/android/base/Makefile.in
+index a941943..799fbbd 100644
+--- a/mobile/android/base/Makefile.in
++++ b/mobile/android/base/Makefile.in
+@@ -138,6 +138,8 @@ classes.dex: .proguard.deps
+ 	$(REPORT_BUILD)
+ 	$(DX) --dex --output=classes.dex jars-proguarded
+ 
++MOZ_DISABLE_PROGUARD = 1
++
+ ifdef MOZ_DISABLE_PROGUARD
+   PROGUARD_PASSES=0
+ else
+@@ -152,6 +154,8 @@ else
+   endif
+ endif
+ 
++PROGUARD_PASSES=0
++
+ proguard_config_dir=$(topsrcdir)/mobile/android/config/proguard
+ 
+ # This stanza ensures that the set of GeckoView classes does not depend on too
+@@ -350,7 +354,7 @@ generated/org/mozilla/gecko/R.java: .aapt.deps ;
+ # If native devices are enabled, add Google Play Services, build their resources
+ generated/android/support/v7/appcompat/R.java: .aapt.deps ;
+ generated/android/support/v7/mediarouter/R.java: .aapt.deps ;
+-generated/com/google/android/gms/R.java: .aapt.deps ;
++generated/tv/matchstick/R.java: .aapt.deps ;
+ 
+ ifdef MOZ_NATIVE_DEVICES
+     extra_packages += android.support.v7.appcompat
+@@ -359,7 +363,7 @@ ifdef MOZ_NATIVE_DEVICES
+     extra_packages += android.support.v7.mediarouter
+     extra_res_dirs += $(ANDROID_MEDIAROUTER_RES)
+ 
+-    extra_packages += com.google.android.gms
++    extra_packages += tv.matchstick
+     extra_res_dirs += $(GOOGLE_PLAY_SERVICES_RES)
+ endif
+ 
+diff --git a/mobile/android/base/MediaFlingBar.java b/mobile/android/base/MediaFlingBar.java
+new file mode 100644
+index 0000000..f07c29f
+--- /dev/null
++++ b/mobile/android/base/MediaFlingBar.java
+@@ -0,0 +1,52 @@
++/* This Source Code Form is subject to the terms of the Mozilla Public
++ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
++ * You can obtain one at http://mozilla.org/MPL/2.0/. */
++
++package org.mozilla.gecko;
++
++import org.mozilla.gecko.util.GeckoEventListener;
++import org.mozilla.gecko.util.ThreadUtils;
++
++import org.json.JSONObject;
++
++import android.content.Context;
++import android.text.TextUtils;
++import android.util.AttributeSet;
++import android.util.Log;
++import android.view.LayoutInflater;
++import android.view.View;
++import android.widget.ImageButton;
++import android.widget.RelativeLayout;
++import android.widget.TextView;
++
++public class MediaFlingBar extends RelativeLayout  {
++    private static final String LOGTAG = "GeckoMediaFlingBar";
++
++    private boolean mInflated;
++
++    public MediaFlingBar(Context context, AttributeSet attrs) {
++        super(context, attrs);
++    }
++
++    public void inflateContent() {
++        LayoutInflater inflater = LayoutInflater.from(getContext());
++        View content = inflater.inflate(R.layout.mediacontroller, this);
++
++        mInflated = true;
++    }
++
++    public void show() {
++        if (!mInflated)
++            inflateContent();
++
++        setVisibility(VISIBLE);
++    }
++
++    public void hide() {
++        setVisibility(GONE);
++    }
++
++    public void onDestroy() {
++    }
++
++}
+diff --git a/mobile/android/base/locales/en-US/android_strings.dtd b/mobile/android/base/locales/en-US/android_strings.dtd
+index c5e0aac..fffad99 100644
+--- a/mobile/android/base/locales/en-US/android_strings.dtd
++++ b/mobile/android/base/locales/en-US/android_strings.dtd
+@@ -295,6 +295,9 @@ size. -->
+ <!ENTITY share_image_failed "Unable to share this image">
+ <!ENTITY save_as_pdf "Save as PDF">
+ <!ENTITY find_in_page "Find in Page">
++
++<!ENTITY show_fling_bar "Fling ...">
++
+ <!ENTITY desktop_mode "Request Desktop Site">
+ <!ENTITY page "Page">
+ <!ENTITY tools "Tools">
+diff --git a/mobile/android/base/moz.build b/mobile/android/base/moz.build
+index 818d2e3..e631891f 100644
+--- a/mobile/android/base/moz.build
++++ b/mobile/android/base/moz.build
+@@ -26,7 +26,7 @@ resjar.generated_sources += [
+ ]
+ 
+ if CONFIG['MOZ_NATIVE_DEVICES']:
+-    resjar.generated_sources += ['com/google/android/gms/R.java']
++    resjar.generated_sources += ['tv/matchstick/R.java']
+     resjar.generated_sources += ['android/support/v7/appcompat/R.java']
+     resjar.generated_sources += ['android/support/v7/mediarouter/R.java']
+ 
+@@ -344,6 +344,9 @@ gbjar.sources += [
+     'lwt/LightweightTheme.java',
+     'lwt/LightweightThemeDrawable.java',
+     'MediaCastingBar.java',
++
++    'MediaFlingBar.java',
++
+     'MemoryMonitor.java',
+     'menu/GeckoMenu.java',
+     'menu/GeckoMenuInflater.java',
+@@ -581,9 +584,9 @@ moz_native_devices_jars = [
+     CONFIG['GOOGLE_PLAY_SERVICES_LIB'],
+ ]
+ moz_native_devices_sources = [
+-    'ChromeCast.java',
+-    'GeckoMediaPlayer.java',
+-    'MediaPlayerManager.java',
++    #'ChromeCast.java',
++    #'GeckoMediaPlayer.java',
++    #'MediaPlayerManager.java',
+ ]
+ if CONFIG['MOZ_NATIVE_DEVICES']:
+     gbjar.extra_jars += moz_native_devices_jars
+@@ -795,7 +798,7 @@ if CONFIG['MOZ_NATIVE_DEVICES']:
+     mediarouter.referenced_projects += ['../' + appcompat.name]
+ 
+     gps = add_android_eclipse_library_project('google-play-services_lib')
+-    gps.package_name = 'com.google.android.gms'
++    gps.package_name = 'tv.matchstick'
+     gps.res = CONFIG['GOOGLE_PLAY_SERVICES_RES']
+     gps.included_projects += ['../' + appcompat.name, '../' + mediarouter.name]
+     gps.referenced_projects += ['../' + appcompat.name, '../' + mediarouter.name]
+diff --git a/mobile/android/base/resources/drawable-xhdpi/line.png b/mobile/android/base/resources/drawable-xhdpi/line.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..ad528beb5036c3e8b711531fcf0a06312f516794
+GIT binary patch
+literal 1098
+zcmaJ=TSyd97#<1IO1oc3B8CZ~qTRXdY`UYX*^K5!W4bQ5QBmW}(H(T=Of$#!5{4vE
+zJp}bo5k&M*K}1@L6ctn$U5JA2QJ{wO&_#L)9|E&8tE)Y<&BK}h{CwZ{U(eCnn#~2X
+z3uhAqQ4p$@!UU1qf$f~UnfNUK((A{+<)|`>>R}U#D>fi1G}s8pkfAh#Fi^DQ-Y1}x
+zAZD!5BT*EUw+bpWyo!tQCJYO+38J(-VJT`0Kx89m*3BUG<Mv&O)U_bh;FlTM5<yI_
+zPT8P7RTEKDEowlc%FD>ogn$JMfD|%ew3?2P2vTWX0o$&drpPn|wFIe&q@r>yDMA~N
+zey`u7G8{`51-z`^UsS}cCpm`YX@;d)pN9<yJTEW|Ir&jInyobnVX0~|7QO|k7($jn
+z)A4xR8~1sk-AuEAK!9dAn&Uhe;c=2CQW751S(Q<cfTP;Fg>-0=uA<Ti+fb0gnNE~o
+zSW~j5GubBGFgl@FH0x#Dk}^P9{y)?(rqB)wgXw(#DeOd&7NEnxfo-;m2iLU94P^<U
+z4HN|J2!ySfF4o2%f=&!tq$sAlMy`<+RX1Jd+B8d+g^=kW#Z*B^3Q}0dtLvJ;Z{j4*
+z&-i>ko@d!gzF4eai;DwQ6>JsfV>d_{t_0OK1DGho)uy?8R<64chJ_<bz}EKxt;&W5
+znJ!$=v**HQ)tlsM*>mBta%r3l?T+`aac5k3hg@@NdGTdx{eg*h-p0#4vW&~e594M?
+zs)!^$d_Pk+w}Z?VN5<yuI(GCSjNafrJ-s$+^dH|yJQ*$_?hH2MKYHKse#U~59f!~F
+z{94NV?3ynwI`!(#oR1ezZ@=3A>*na~ch?6G?7ecar#rT7bvJdXY|iDeC54A-lDUs>
+z^-HNGEBwx9VR7fNZ+qCzSu0PTyT5gHPxNg6i;{)TP-W^j-~I9y)6}=idG@w%ykUH7
+z=t0-n-EW4M)~9-(J9Wu*ZCgfOx98m(*+0;}EoUY%aN@|gc;G^z`?^DwHB#56JqP~)
+De-m?T
+
+literal 0
+HcmV?d00001
+
+diff --git a/mobile/android/base/resources/drawable-xhdpi/mediacontroller_pause.png b/mobile/android/base/resources/drawable-xhdpi/mediacontroller_pause.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..a0371ea7cc9b683eb1a7f2f6f5361eb95e721d15
+GIT binary patch
+literal 1162
+zcmbVM%WKp?7*Dm9ZMD*i2ZiF8dQj*lnPfNJ4PD#aWNQ~qExRl3L8#ee+6`?oF`0JL
+zD)>MI555kbJbO{`B8Z?M3L@V0prH5%hzRzg;?2oES|3XVLz0>K^8J3_JC~-X4)*u$
+z>SGwDzc8s4=~|7RSPy;Qxz)3sE;~uSLP~g+)D0goSqoPYC^*I(Dk8&LKKT-jGR)?h
+zU9OOdepoTF!x@nd7djqAGtB5%=o#ibBA|-qY&XMxdGv$@wv}OzC3QjfR8+GkSA0}j
+znJSwr^Jdy&#}0teP@x14A_fSZ1vgN_4BOyU=sptjENG~Z`3&21s-jN=75fMzIVo-m
+z5CU1|U?M5Ya2SXJ6nTN(avUa<q^yV|pmnj-ns3c2MQx&Gi=HxUjSx@a`Fg$1)g=!5
+zb39C^(-DU##;Ha;SayjK#@%43&7h&c^lgvW*aZ=zQN@cS!%|P1Avm6{uMxXJD^WCM
+zd}w$)<OJSvqPQB`0V$$&H#%wu<z)}?MHJvg-=y`J9cqJV?lv|QDN=8gBfd?GVk~Ib
+zTy&623R;GxUpULQ6bQ3vL6sAdBnom0!jvdxRcRut<)mabFR5*gPS}(LbCMv8$S|)#
+zn3qyQ9;Q`Q$|kf_Y9t}Iu?06EhHIj>U7Ol%VQJkqz$&Vb41)bK#tZEZn66=hgBtdL
+zT9Uy&-7sx866}u()Qnd{zP*I32_HM4kzvK|-~kl>6?qeD{ZH0->I@&X$1m;D7SSGz
+zwrkB#4{PItTskv89gbJ4SFX~*dRWl1<?#LI53hR}5F3BG?fcBT*^h^=pV}H5{I(;1
+zbnt6^uq$?s*)ssTH(eM%I}jV#)RhC{vF?^I2QJ>YeE-bMgXgPh`PrMjzw33zG>QHq
+tU3&XtrZjxh96GN5X=B|U#oqnYD=@pSZFzAUJU$)$9SZp=?OyK0`JZX4SWW-{
+
+literal 0
+HcmV?d00001
+
+diff --git a/mobile/android/base/resources/drawable-xhdpi/mediacontroller_play.png b/mobile/android/base/resources/drawable-xhdpi/mediacontroller_play.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..cfe8e712621a5c40da1089e373383107c263247a
+GIT binary patch
+literal 1622
+zcmbVMeNfY87!Sy?0Ow}s7Y=kWcsD?3lcuC?q}H}6qhOJh9x~lvX`0#yO==oOi!gP^
+z4G?vDlXEH#{X^Y^!GU_Z(|xI@tecx3n-e$B6Lrp$`2jmlHcyuTb?(l&yXBI+@AKsO
+z{hrS^jfDj-kB@&L9sq#xwp`L7tuFZiW2JZ7&e&(AWtwO$5sP?_SVaj8U~=;=2D166
+zC5(fi+@WP(G1&kx&dWMW#1i{_g64fnO14o3eSQfI0NKW%pQ6hd5ppq0Sk3_7KJ+;Z
+zv2FvrFw2hE{T9Z{=2i<#QFVcnt}dtbZrC^%$_^3|fsYX>DCn!;0z}XNkMI)GURJAM
+zXv9P;H^8GomDmd*3okHGmJ-XP5fp`RT#0J3a2(Bm)Cj6pA<~U!q8cI#C)8SK?1Ck4
+zg4;tl$eb}>l4O9rqUa}7s;a6gWfi96g(WIfuh+{QYIUY$kr@baA{ET!0x1y&k_pfP
+z>lay`gJed^#aD_3Sc-Hs1)tw;e?-g$#tJ2sOckX3DpZN6d_Fm^5$k~HVEzu{iPiyU
+z$j_)8On|QxXsI8bln7X=-P0Y(hEg=d0)ds9LRFAFUFl;u(MB3z>5J0Mx(O6D=@ARA
+z!7w#~>rhmuR+}tXj)^p5StcuHiEum#tHV$;h9G7fwUQ`m#dL@j)mto>Nki&%S`8k-
+z+PHv7aWoV0%SwL7u%@SC35&o`A}=_3z9KRKg<f9d176+_S&DEd)lShYCo9tA294%R
+zG6MT1<IWLyA2d>7f_*{+sQSM$AH}-=Pt{aXFe-UG9vhd4N}54=`)K$j;nDG7IO)s?
+z(&31!y0irVqU&s=$r-%RzjaQ2i)qq3C)T$@t2D*79cyD8F=xG-io5c*o=MlnB_g@;
+z`x~Nc6W5e9+Lf=LVG_otMZ4(c@NsiOf(iWc<nr^=kkSjczo{9_zSEtsxc^%3u;;tY
+zduuOp+Lgv1?|~Dd8s^17(TbHI3Bdm%%!`2`t)i@X=A?T~!R`I2w>Kv3Z~8URQfv70
+z*opArfgHW5uC?LV2LtBbgMG_L%`EtCQ7D=3O-cS__x-}T=?6*_Z_Vz@Sh110wqK|N
+zjfzGKQyl8NZ<SFU1CHS}V40$E-2mC^**nBIhj-Q#a^3L#Vp6wof-*h-?p(NqoHcai
+zLD#Mp_{aj%HRslg(}%#aTd9|t7leJ}J#5B`TZ`%swB{ELZrb&=ZuJktLi;(zWhsos
+zo4@@SYJY`v<%g!IZ`?Uo<Eb_NP8_}&24=(0^*c`$Jahficr*E026%mA^C^G*RK+IR
+z7-~(wbUr10oZ?|%`~0+{_Kw&qL~HGgt(CvQ6|LQ;rzc(R9juv|)zq`pz5BS~$fD%;
+z!nr+OZqKgC8!FFs#wv>6?*-Sb?MwdU5BMi#Uz2)b!oGI44P2MEt*i8O$~DgR{DpmR
+zJGi_pqt1MS&6`T4VC6fs=DlSDNolW=FCoH>()IRK+P9%_3)mLbjuDBA@VL_O&W~0b
+z_gqyT`E2;?UE%ws!er{?!Rukqhjl*>fpaDX6RWqKUOMaQK6uZ=qlXTFH`jEecjl>j
+z@}^MrgLrp$(ifE-aq*q)ipTp6C>j6~ik`3vlv?}`VSChrI0WdN+4b&jt?{D#r?*)P
+K$PV)xZ~p}+hC)FA
+
+literal 0
+HcmV?d00001
+
+diff --git a/mobile/android/base/resources/drawable-xhdpi/scrubber_control_disabled_holo.png b/mobile/android/base/resources/drawable-xhdpi/scrubber_control_disabled_holo.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..14f61b539e7debc858e35cf1a1e06e282b496ce7
+GIT binary patch
+literal 1941
+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
+D1G@J%
+
+literal 0
+HcmV?d00001
+
+diff --git a/mobile/android/base/resources/drawable-xhdpi/scrubber_control_focused_holo.png b/mobile/android/base/resources/drawable-xhdpi/scrubber_control_focused_holo.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..5d1da3c001a1f1e630cc774ba8042692bf127e63
+GIT binary patch
+literal 2355
+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
+GocSMS)x@>{
+
+literal 0
+HcmV?d00001
+
+diff --git a/mobile/android/base/resources/drawable-xhdpi/scrubber_control_normal_holo.png b/mobile/android/base/resources/drawable-xhdpi/scrubber_control_normal_holo.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..45608c1bdc0bacab6e46832e15c91672bd7162da
+GIT binary patch
+literal 2634
+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
+aFnyr-Tp@C*ulDTp-yPeP%PePv?EVjiVNg^6
+
+literal 0
+HcmV?d00001
+
+diff --git a/mobile/android/base/resources/drawable-xhdpi/scrubber_control_pressed_holo.png b/mobile/android/base/resources/drawable-xhdpi/scrubber_control_pressed_holo.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..50f30c7e8312ef92d0bd95ab1b4d980c089f5ee4
+GIT binary patch
+literal 3198
+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
+
+literal 0
+HcmV?d00001
+
+diff --git a/mobile/android/base/resources/drawable-xhdpi/scrubber_primary_holo.9.png b/mobile/android/base/resources/drawable-xhdpi/scrubber_primary_holo.9.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..6c98aa61a8109e4aefa92e2403bd169cdc63fe30
+GIT binary patch
+literal 1001
+zcmaJ=PiWIn9F7i$8w?agw+Z^lKs>DZx3*~?jdM%dtzb%R3-%%|P2SqLB`+p#Yqpyr
+zg4ZFUAjsHd2le7nP*IrdAb8kG@F?Ozz3w2?m#*zRSOYKb{T|=<{r<lD#lqak@c1yp
+zFeCYStwi_Jbd4V$r2m(z&o0w#jAW~%j2B7M@DVd(;Ti&Y$Ec$cGOV>*yC}mj1FT)C
+zlB#|Mn%Lot2*ZVrN7)RMnGQX}TtWoYP~CPF_SdU7EU+zwy_V1g-BVG+o?rJ-dA(3E
+z*O$z+#ZF%WnGjL|2N45=&axZ8P+{A;ke;J!o&{|PSyI@8psIQisMtp!!3i-_ND3e+
+za^h56mgPwx38KIY5-&<IQHE0z6a>)uSnAEU7GX)tb$n4vVH<>akmsAtCfA(euwUoJ
+zbUGbrNK%X<V!@hAj4<W~6I}%j1*UI%#Kta&6pb2QAqq<)JxIavda`cNDHAOi9~vGn
+zazd0+7pUw1hdNFV9gq?_jQ5|yL1oQDd<g}3#W!i=7AGQC9#nl~5bRelUhY=0*uVq_
+z4eSB6oB+CE+HPdG@wyK4Za@szM0rhNsRC!)7EGtKWGb7I)m%I+idk`XMoy^NtSlzg
+zcrGW!yIc*MD-Lo=munqzQ+>J7C^#PVtRdfCMOMzo4rr$g?f$VO`s#JKR{vO%eYrdh
+zhL0NiSEIXEbb6v=Z)~a28+_!_Y4_<^?_K;bN}t5_yf#w_KiBqKt?7XizvtecI<o!v
+z!P&bXmoE&C-`=bX&zT?Z9vyoa-yRwr8?(>sOagZQ)9cpOuCuqGZERhI=VD*(`QLZ6
+qEr{daHos<yh0U8A`>m%Z!CPkN==q;F2A|ZU$Cu9*v=_4rcm4oQ#Xpe%
+
+literal 0
+HcmV?d00001
+
+diff --git a/mobile/android/base/resources/drawable-xhdpi/scrubber_secondary_holo.9.png b/mobile/android/base/resources/drawable-xhdpi/scrubber_secondary_holo.9.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..8b37b6b24c3e35e156b1def6cefa57ea044f3b3e
+GIT binary patch
+literal 995
+zcmaJ=&ui0A9M2pS85>R*gLMZV84QFq$xEAthQ_W-+O1&5><a6#Y4X;FHF+_4Thrmi
+z;l+a&5kYUViwE^GZypr%;z335q<@2W^&rlduI)Tn126A=AD_?X`}5u1+FYNRN=`8h
+zGgH~nt8|~ID|s<N|0f5}R_V4tN_Dc0cS+X_5L2{q6M>3rwonzBcJJnUlxLVp)~VG=
+z-MFq;*yYR^!$q!7*$k5}M80Y5Ap)AH<#;Ol<JD^xIJU~}NQPke8frTmhXL9?+^kuL
+zdsfb73)etCQmBB7hzTOM<AqA3vVC2Jp5tqt1$_wFQ`xhi>c$q(aDafs2`Nj+3LpzP
+zn9j(uyaGf43cMilP)tEtNsEdgfWgO7Z-Kq5RQ2+}7qwKjO^C1Xe7D=>x@isvEgt4_
+zxmZIKQxuU3dmb^Plou`y6?7C@f#VYgdmvUcn|Pn7ERFOm1=k<Rdf}i<v|xN>`aI->
+zIHe)bF#Zp9-4Qw@RdgQjKZV0u&qsU}g?K-(XybO5VpqPR1;`{gsA1e0R&lG12@c!X
+z2imp-4AXMF*zV&EL#cQnF+B@abd{wFoa5MvE=po?Et}QK5`?e>*NU>Fl}a+qYMF9b
+z%nZ3Yw)S1*ks;SU=gMQb@hG@H^{k`7IY4$fz%J;gtT^Li$&A$-aP9H2NMpG?4Tg^!
+z`&XlfS9E&f<7jNDF&cd2(P<CpSYOWdB>E(FDtfUNeQo|cJuOVm{#t)KH}Uk*gT*@^
+zI?IXV?I$ha`J35kYrg*Yc)4NQc4Gn_UHX2qXn4norE22d{coqASJZbizYEE^m!EoH
+fK3-i-FHBsRW*%x+QjHt8wD{RoN}KwNwZ_pOH|;h?
+
+literal 0
+HcmV?d00001
+
+diff --git a/mobile/android/base/resources/drawable/mediacontroller_button.xml b/mobile/android/base/resources/drawable/mediacontroller_button.xml
+new file mode 100644
+index 0000000..d701ba7
+--- /dev/null
++++ b/mobile/android/base/resources/drawable/mediacontroller_button.xml
+@@ -0,0 +1,10 @@
++<?xml version="1.0" encoding="utf-8"?>
++<selector xmlns:android="http://schemas.android.com/apk/res/android">
++
++    <item android:drawable="@color/mediacontroller_bg_pressed" android:state_focused="true"/>
++    <item android:drawable="@color/mediacontroller_bg_pressed" android:state_pressed="true"/>
++    <item android:drawable="@color/transparent" android:state_enabled="false"/>
++    <item android:drawable="@color/transparent"/>
++
++
++</selector>
+\ No newline at end of file
+diff --git a/mobile/android/base/resources/drawable/scrubber_control_selector_holo.xml b/mobile/android/base/resources/drawable/scrubber_control_selector_holo.xml
+new file mode 100644
+index 0000000..f64429d
+--- /dev/null
++++ b/mobile/android/base/resources/drawable/scrubber_control_selector_holo.xml
+@@ -0,0 +1,19 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!--
++     Copyright (C) 2011 The Android Open Source Project Licensed under the 
++	Apache License, Version 2.0 (the "License"); you may not use this file except 
++	in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 
++	Unless required by applicable law or agreed to in writing, software distributed 
++	under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES 
++	OR CONDITIONS OF ANY KIND, either express or implied. See the License for 
++	the specific language governing permissions and limitations under the License.
++-->
++
++<selector xmlns:android="http://schemas.android.com/apk/res/android">
++
++    <item android:drawable="@drawable/scrubber_control_disabled_holo" android:state_enabled="false"/>
++    <item android:drawable="@drawable/scrubber_control_pressed_holo" android:state_pressed="true"/>
++    <item android:drawable="@drawable/scrubber_control_focused_holo" android:state_selected="true"/>
++    <item android:drawable="@drawable/scrubber_control_normal_holo"/>
++
++</selector>
+\ No newline at end of file
+diff --git a/mobile/android/base/resources/drawable/scrubber_progress_horizontal_holo_dark.xml b/mobile/android/base/resources/drawable/scrubber_progress_horizontal_holo_dark.xml
+new file mode 100644
+index 0000000..a76f078
+--- /dev/null
++++ b/mobile/android/base/resources/drawable/scrubber_progress_horizontal_holo_dark.xml
+@@ -0,0 +1,28 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!--
++     Copyright (C) 2010 The Android Open Source Project Licensed under the 
++	Apache License, Version 2.0 (the "License"); you may not use this file except 
++	in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 
++	Unless required by applicable law or agreed to in writing, software distributed 
++	under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES 
++	OR CONDITIONS OF ANY KIND, either express or implied. See the License for 
++	the specific language governing permissions and limitations under the License.
++-->
++
++<layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
++
++    <item
++        android:id="@android:id/background"
++        android:drawable="@drawable/scrubber_secondary_holo"/>
++    <item android:id="@android:id/secondaryProgress">
++        <scale
++            android:drawable="@drawable/scrubber_secondary_holo"
++            android:scaleWidth="100%" />
++    </item>
++    <item android:id="@android:id/progress">
++        <scale
++            android:drawable="@drawable/scrubber_primary_holo"
++            android:scaleWidth="100%" />
++    </item>
++
++</layer-list>
+\ No newline at end of file
+diff --git a/mobile/android/base/resources/layout/gecko_app.xml b/mobile/android/base/resources/layout/gecko_app.xml
+index aabd4cb..6c885ec 100644
+--- a/mobile/android/base/resources/layout/gecko_app.xml
++++ b/mobile/android/base/resources/layout/gecko_app.xml
+@@ -61,12 +61,18 @@
+                                          style="@style/FindBar"
+                                          android:visibility="gone"/>
+ 
+-        <org.mozilla.gecko.MediaCastingBar android:id="@+id/media_casting"
++        <!--org.mozilla.gecko.MediaCastingBar android:id="@+id/media_casting"
+                                            android:layout_width="match_parent"
+                                            android:layout_height="wrap_content"
+                                            android:layout_alignParentBottom="true"
+                                            style="@style/FindBar"
+-                                           android:visibility="gone"/>
++                                           android:visibility="gone"/-->
++
++           <org.mozilla.gecko.MediaFlingBar android:id="@+id/media_fling"
++                                              android:layout_width="match_parent"
++                                              android:layout_height="wrap_content"
++                                              android:layout_alignParentBottom="true"
++                                              android:visibility="gone"/>
+ 
+         <FrameLayout android:id="@+id/search_container"
+                      android:layout_width="match_parent"
+diff --git a/mobile/android/base/resources/layout/mediacontroller.xml b/mobile/android/base/resources/layout/mediacontroller.xml
+new file mode 100644
+index 0000000..3fcc371
+--- /dev/null
++++ b/mobile/android/base/resources/layout/mediacontroller.xml
+@@ -0,0 +1,102 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    android:layout_width="match_parent"
++    android:layout_height="wrap_content"
++    android:background="@color/mediacontroller_bg"
++    android:orientation="vertical" >
++    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
++            android:id="@+id/fling_info"
++    android:layout_width="match_parent"
++    android:layout_height="wrap_content"
++    android:background="@color/mediacontroller_bg"
++            android:visibility="gone"
++    android:orientation="vertical" >
++    <TextView
++            android:id="@+id/fling_device_name"
++            style="@style/MediaController_Text"
++            android:layout_width="wrap_content"
++            android:layout_height="wrap_content"
++            android:layout_gravity="center"
++            android:layout_marginTop="2dp"
++            android:layout_marginBottom="2dp"
++            android:singleLine="true"  
++            android:ellipsize="end" />
++    <ImageButton
++            android:layout_width="match_parent"
++            android:layout_height="wrap_content"
++            android:layout_centerVertical="true"
++            android:background="@color/mediacontroller_bg"
++            android:src="@drawable/line"
++            android:layout_marginLeft="5dp"
++            android:layout_marginRight="5dp" />
++    <TextView
++            android:id="@+id/media_info"
++            style="@style/MediaController_Text"
++            android:layout_width="wrap_content"
++            android:layout_height="wrap_content"
++            android:layout_alignParentLeft="true"
++            android:layout_centerVertical="true"
++            android:singleLine="true"  
++            android:ellipsize="end"
++            android:visibility="gone"
++            android:layout_marginLeft="5dp" />
++    </LinearLayout>
++    <LinearLayout 
++        android:layout_width="match_parent"
++        android:layout_height="48dp"
++        android:background="@color/mediacontroller_bg"
++        android:orientation="horizontal" >
++
++    <android.support.v7.app.MediaRouteButton
++                android:id="@+id/media_route_button"
++                android:layout_width="wrap_content"
++                android:background="@android:color/transparent"
++                android:layout_height="wrap_content"/>
++
++    <RelativeLayout
++        android:id="@+id/mediacontroller_control"
++        android:layout_width="match_parent"
++        android:layout_height="wrap_content"
++        android:orientation="horizontal" >
++
++        <ImageButton
++            android:id="@+id/mediacontroller_play_pause"
++            android:layout_width="wrap_content"
++            android:layout_height="wrap_content"
++            android:layout_centerVertical="true"
++            android:layout_marginLeft="5dp"
++            android:background="@drawable/mediacontroller_button"
++            android:src="@drawable/mediacontroller_play" />
++
++        <TextView
++            android:id="@+id/mediacontroller_time_current"
++            style="@style/MediaController_Text"
++            android:layout_width="wrap_content"
++            android:layout_height="wrap_content"
++            android:layout_centerVertical="true"
++            android:layout_marginLeft="5dp"
++            android:layout_toRightOf="@id/mediacontroller_play_pause" />
++
++        <TextView
++            android:id="@+id/mediacontroller_time_total"
++            style="@style/MediaController_Text"
++            android:layout_width="wrap_content"
++            android:layout_height="wrap_content"
++            android:layout_alignParentRight="true"
++            android:layout_centerVertical="true"
++            android:layout_marginRight="5dp" />
++
++        <SeekBar
++            android:id="@+id/mediacontroller_seekbar"
++            style="@style/MediaController_SeekBar"
++            android:layout_width="match_parent"
++            android:layout_height="wrap_content"
++            android:layout_centerVertical="true"
++            android:layout_toLeftOf="@id/mediacontroller_time_total"
++            android:layout_toRightOf="@id/mediacontroller_time_current"
++            android:focusable="true"
++            android:max="1000" />
++    </RelativeLayout>
++
++    </LinearLayout>
++</LinearLayout>
+diff --git a/mobile/android/base/resources/menu-large-v11/browser_app_menu.xml b/mobile/android/base/resources/menu-large-v11/browser_app_menu.xml
+index 5ec0453..186ab4e 100644
+--- a/mobile/android/base/resources/menu-large-v11/browser_app_menu.xml
++++ b/mobile/android/base/resources/menu-large-v11/browser_app_menu.xml
+@@ -41,6 +41,9 @@
+     <item android:id="@+id/find_in_page"
+           android:icon="@drawable/ic_menu_find_in_page"
+           android:title="@string/find_in_page" />
++ 
++     <item android:id="@+id/show_fling_bar"
++          android:title="@string/show_fling_bar" />
+ 
+     <item android:id="@+id/desktop_mode"
+           android:icon="@drawable/ic_menu_desktop_mode_off"
+diff --git a/mobile/android/base/resources/menu-v11/browser_app_menu.xml b/mobile/android/base/resources/menu-v11/browser_app_menu.xml
+index a8c6186..e0a4b9b 100644
+--- a/mobile/android/base/resources/menu-v11/browser_app_menu.xml
++++ b/mobile/android/base/resources/menu-v11/browser_app_menu.xml
+@@ -42,6 +42,10 @@
+           android:icon="@drawable/ic_menu_find_in_page"
+           android:title="@string/find_in_page" />
+ 
++
++   <item android:id="@+id/show_fling_bar"
++        android:title="@string/show_fling_bar" />
++
+     <item android:id="@+id/desktop_mode"
+           android:icon="@drawable/ic_menu_desktop_mode_off"
+           android:title="@string/desktop_mode"
+diff --git a/mobile/android/base/resources/menu-xlarge-v11/browser_app_menu.xml b/mobile/android/base/resources/menu-xlarge-v11/browser_app_menu.xml
+index dd4299a..095de1b 100644
+--- a/mobile/android/base/resources/menu-xlarge-v11/browser_app_menu.xml
++++ b/mobile/android/base/resources/menu-xlarge-v11/browser_app_menu.xml
+@@ -42,6 +42,10 @@
+           android:icon="@drawable/ic_menu_find_in_page"
+           android:title="@string/find_in_page" />
+ 
++
++    <item android:id="@+id/show_fling_bar"
++          android:title="@string/show_fling_bar" />
++
+     <item android:id="@+id/desktop_mode"
+           android:icon="@drawable/ic_menu_desktop_mode_off"
+           android:title="@string/desktop_mode"
+diff --git a/mobile/android/base/resources/menu/browser_app_menu.xml b/mobile/android/base/resources/menu/browser_app_menu.xml
+index e52f9d14..a0c52b9 100644
+--- a/mobile/android/base/resources/menu/browser_app_menu.xml
++++ b/mobile/android/base/resources/menu/browser_app_menu.xml
+@@ -39,6 +39,9 @@
+     <item android:id="@+id/find_in_page"
+           android:title="@string/find_in_page" />
+ 
++    <item android:id="@+id/show_fling_bar"
++          android:title="@string/show_fling_bar" />
++
+     <item android:id="@+id/desktop_mode"
+           android:title="@string/desktop_mode"
+           android:checkable="true" />
+diff --git a/mobile/android/base/resources/values-zh-rCN/strings.xml b/mobile/android/base/resources/values-zh-rCN/strings.xml
+new file mode 100644
+index 0000000..3adbe40
+--- /dev/null
++++ b/mobile/android/base/resources/values-zh-rCN/strings.xml
+@@ -0,0 +1,26 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="app_name">MyFling-Firefox</string>
++    <string name="start_server">启动投射服务</string>
++    <string name="stop_server">停止投射服务</string>
++    <string name="wifi_state">WiFi状态</string>
++    <string name="instruction_pre">启动后可以投射内容（视频，音乐，图片，游戏等）到该设备</string>
++    <string name="instruction">准备投射</string>
++    <string name="no_wifi">无WiFi网络</string>
++    <string name="notif_server_starting">Fling服务已启动</string>
++    <string name="notif_title">Fling服务正在运行</string>
++    
++    <string name="storage_warning">不能运行程序，请确认内部存储空间未满！</string>
++    
++    <string name="error_title">亲，出问题了。。。</string>
++    <string name="error_detail_no_wifi">请确认WiFi已打开！</string>
++    <string name="error_detail_no_ip">不能获得IP地址，请确认WiFi网络连接正常！</string>
++    
++    <string name="fling_ready">准备投射</string>
++    <string name="ready_visit">获取更多信息请查看：</string>
++    <string name="learn_visit_site">matchstick.tv</string>
++    <string name="fling_info">设备信息:</string>
++    <string name="current_version">版本</string>
++    <string name="resolution">分辨率</string>
++    <string name="show_fling_bar">投射</string>
++</resources>
+diff --git a/mobile/android/base/resources/values/colors.xml b/mobile/android/base/resources/values/colors.xml
+index 27c339b..ee60f5a 100644
+--- a/mobile/android/base/resources/values/colors.xml
++++ b/mobile/android/base/resources/values/colors.xml
+@@ -178,5 +178,8 @@
+   <!-- Tab grid text highlight colour -->
+   <color name="new_tablet_tab_grid_text_unselected">#FFAFB1B3</color>
+ 
++  <color name="mediacontroller_bg_pressed">#ff53c1bd</color>
++  <color name="transparent">#00000000</color>
++  <color name="mediacontroller_bg">#99000000</color>
+ 
+ </resources>
+diff --git a/mobile/android/base/resources/values/strings.xml b/mobile/android/base/resources/values/strings.xml
+new file mode 100644
+index 0000000..f0c4ebc
+--- /dev/null
++++ b/mobile/android/base/resources/values/strings.xml
+@@ -0,0 +1,46 @@
++<?xml version="1.0" encoding="utf-8"?>
++
++<!-- Copyright (c) 2012 The Chromium Authors. All rights reserved.
++
++     Use of this source code is governed by a BSD-style license that can be
++     found in the LICENSE file.
++ -->
++
++<resources>
++    <string name="url_hint">Type URL Here</string>
++    <string name="print_menu">Print…</string>
++    <string name="signin_select_account">Select Account</string>
++    <string name="signin_no_account">There is no google account registered on this device.</string>
++    <string name="signin_sign_in">Sign in</string>
++    <string name="signin_cancel">Cancel</string>
++    <string name="signout_title">Do you want to sign out?</string>
++    <string name="signout_sign_out">Sign out</string>
++    <string name="signout_cancel">Cancel</string>
++    <string name="distill_page_menu">Distill page</string>
++    <string name="browser_process_initialization_failed">Initialization failed.</string>
++
++    <string name="app_name">MyFling-Firefox</string>
++    <string name="start_server">Start Fling Server</string>
++    <string name="stop_server">Stop Fling Server</string>
++    <string name="wifi_state">WiFi State</string>
++    <string name="instruction_pre">Fling media contents(Video, Audio, Game, etc) to device</string>
++    <string name="instruction">Available Fling device：</string>
++    <string name="no_wifi">No WiFi</string>
++    <string name="notif_server_starting">Fling Server started!</string>
++    <string name="notif_title">Fling Server is running...</string>
++    
++    <string name="storage_warning">Error: please make sure internal storage is available！</string>
++    
++    <string name="error_title">Oops, some error happened!</string>
++    <string name="error_detail_no_wifi">Please make sure your WiFi is enabled!</string>
++    <string name="error_detail_no_ip">Cannot get IP address, please make sure your Wifi network connection is OK!</string>
++    
++    <string name="fling_ready">Ready to Fling</string>
++    <string name="ready_visit">Learn more at:</string>
++    <string name="learn_visit_site">matchstick.tv</string>
++    <string name="fling_info">Info:</string>
++    <string name="current_version">Version</string>
++    <string name="resolution">Device resolution</string>
++
++    <string name="show_fling_bar">Fling...</string>
++</resources>
+diff --git a/mobile/android/base/resources/values/styles.xml b/mobile/android/base/resources/values/styles.xml
+index e7bb643..23f48f6 100644
+--- a/mobile/android/base/resources/values/styles.xml
++++ b/mobile/android/base/resources/values/styles.xml
+@@ -892,4 +892,22 @@
+         <item name="android:paddingRight">8dp</item>
+     </style>
+ 
++
++    <style name="MediaController_SeekBar" parent="android:Widget.SeekBar">
++        <item name="android:progressDrawable">@drawable/scrubber_progress_horizontal_holo_dark</item>
++        <item name="android:indeterminateDrawable">@drawable/scrubber_progress_horizontal_holo_dark</item>
++        <item name="android:minHeight">13dip</item>
++        <item name="android:maxHeight">13dip</item>
++        <item name="android:thumb">@drawable/scrubber_control_selector_holo</item>
++        <item name="android:thumbOffset">16dip</item>
++        <item name="android:paddingLeft">16dip</item>
++        <item name="android:paddingRight">16dip</item>
++    </style>
++
++    <style name="MediaController_Text">
++        <item name="android:textColor">#ffffffff</item>
++        <item name="android:textSize">14sp</item>
++        <item name="android:textStyle">bold</item>
++    </style>
++
+ </resources>
+diff --git a/xpcom/base/nsCycleCollector.cpp b/xpcom/base/nsCycleCollector.cpp
+index 71ea2d6..d8dbb7e 100644
+--- a/xpcom/base/nsCycleCollector.cpp
++++ b/xpcom/base/nsCycleCollector.cpp
+@@ -1715,7 +1715,7 @@ public:
+   nsCycleCollectorLogger()
+     : mLogSink(nsCycleCollector_createLogSink())
+     , mWantAllTraces(false)
+-    , mDisableLog(false)
++    , mDisableLog(true)
+     , mWantAfterProcessing(false)
+     , mCCLog(nullptr)
+   {
+-- 
+1.9.1
+
